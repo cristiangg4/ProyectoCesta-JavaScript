@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Inserto la librería de bootstrap -->
+    <!-- Bootstrap css -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <!-- Bottstrap icons 1.9 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css"
+        integrity="sha384-xeJqLiuOvjUBq3iGOjvSQSIlwrpqjSHXpduPd6rQpuiM3f5/ijby8pCsnbu5S81n" crossorigin="anonymous">
+    <!-- JavaScripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+        crossorigin="anonymous"></script>
+
+    <!-- Documento CSS -->
+    <style>
+        header {
+            background-color: rgb(223, 246, 160);
+        }
+
+        .titulo {
+            display: flex;
+
+        }
+
+        .prodCesta {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        #fotos {
+            width: 40px;
+        }
+
+        .table-responsive {
+            text-align: end;
+        }
+
+        button {
+            border-color: blue
+        }
+    </style>
+    <script>
+
+        class Producto {
+
+            static cod;
+            nombre;
+            precio;
+            imagen;
+            cantidad;
+
+            constructor(cod, nombre, precio, imagen) {
+                this.cod = cod;
+                this.nombre = nombre;
+                this.precio = precio;
+                this.imagen = imagen;
+                this.cantidad = 0;
+            }
+
+        }
+
+        var productos = [
+            { cod: 1, nombre: "Cesped", precio: 20, imagen: "https://d26itsb5vlqdeq.cloudfront.net//image/20B27BE6-0DA5-8349-B62490B83198B610" },
+            { cod: 2, nombre: "Porterias", precio: 100, imagen: "https://equidesa.com/media/productos/PORTERIA_BM-FS_C100.png" },
+            { cod: 3, nombre: "Banquillos", precio: 50, imagen: "https://www.hiperescola.com/tmp/images/HTTPS___WWW.GRUPODESCOM.ES_IMATGES_DE0509019_W_300_H_300_ADJUST_1_Q_90.PNG" },
+            { cod: 4, nombre: "Pelotas", precio: 23, imagen: "https://xavoequipament.es/1128/pelotafoam-forma-balon-futbol-sala.jpg" },
+            { cod: 5, nombre: "Conos", precio: 44, imagen: "https://www.rollerstore.es/images/stories/virtuemart/product/frcon-cob2b-z.png" },
+            { cod: 6, nombre: "Aspersores", precio: 66, imagen: "https://www.piscinasyproductos.com/c/831-large_default/aspersores-y-difusores-de-riego.jpg" }
+        ];
+        window.addEventListener("load", () => new ContProductos(productos));
+
+        class ContProductos {
+
+            #array = [];
+            #cestaP;
+
+            constructor(productos) {
+
+                productos.forEach(element => {
+
+                    var producto = new Producto(element.cod, element.nombre, element.precio, element.imagen);
+
+                    this.#array.push(producto);
+
+                });
+
+                this.#cestaP = new Cesta(this.#array);
+                this.plantilla();
+            }
+
+            plantilla() {
+
+                this.#array.forEach(element => {
+
+
+                    let divProductos = document.getElementById("contProductos");
+                    // Div
+                    let div = document.createElement("div");
+                    div.setAttribute("class", "card col-sm-4");
+                    divProductos.appendChild(div);
+
+                    // Imagen
+                    let ima = document.createElement("img");
+                    ima.setAttribute("class", "card-text");
+                    ima.setAttribute("src", element.imagen);
+                    div.appendChild(ima);
+
+                    // Nombre
+                    let para = document.createElement("p");
+                    para.setAttribute("class", "card-text");
+                    para.innerText += element.nombre;
+                    div.appendChild(para);
+
+                    // Precio
+                    let precio = document.createElement("p");
+                    precio.setAttribute("class", "card-text");
+                    precio.innerText += element.precio;
+                    div.appendChild(precio);
+
+                    // Cantidad
+                    let cantParr = document.createElement("p");
+                    cantParr.setAttribute("class", "card-text");
+                    cantParr.innerText = "Cantidad:";
+                    div.appendChild(cantParr);
+
+                    let cantInput = document.createElement("input");
+                    cantInput.setAttribute("type", "number");
+                    cantInput.setAttribute("min", "1");
+                    cantInput.setAttribute("data-iduni", element.cod);
+                    cantInput.setAttribute("value", "1");
+                    div.appendChild(cantInput);
+
+                    // Boton
+                    let botton = document.createElement("button");
+                    botton.setAttribute("class", "btn btn-outline-secondary");
+                    botton.setAttribute("style", "background-color:  rgb(223, 246, 160); border-color:blue");
+                    botton.setAttribute("data-idbot", element.cod);
+                    botton.innerHTML = "Añadir";
+
+
+                    div.appendChild(botton);
+
+                    botton.addEventListener(
+                        "click",
+                        () => {
+                            let iduni = document.querySelector(`[data-iduni = "${element.cod}"]`).value;
+                            let idbot = document.querySelector(`[data-idbot = "${element.cod}"]`).dataset.idbot;
+
+                            this.#cestaP.añadirCesta(idbot, Number(iduni));
+                        }
+                    );
+
+                });
+
+            }
+
+        }
+
+        class Cesta {
+
+            #productos = [];
+            #cestaAñadidos = [];
+
+
+            constructor(productos) {
+                this.#productos = productos;
+
+                var datos = localStorage.getItem("datos");
+                if(datos != undefined){
+                    let obj = JSON.parse(datos);
+                    this.#cestaAñadidos = obj;
+                }
+
+                this.mostrarCesta();
+            }
+
+            añadirCesta(id, cantidad) {
+
+                let find = this.#cestaAñadidos.find(element => element.cod == id);
+                if (find == undefined) {
+                    this.#cestaAñadidos.push({ cod: id, cantidad: cantidad });
+                } else {
+                    find.cantidad += cantidad;
+                }
+
+                console.log(this.#cestaAñadidos);
+
+                this.mostrarCesta();
+                console.log("");
+
+                var objJS = this.#cestaAñadidos;
+                var cadenaJSON = JSON.stringify(objJS);
+                localStorage.setItem("datos", cadenaJSON);
+
+
+            }
+
+            mostrarCesta() {
+                let bodyTable = document.getElementById("bodyTable");
+                bodyTable.innerHTML = "";
+                var arraySubtotal = [];
+                var total = 0;
+
+                let totalP = document.getElementById("total");
+                let totalIVA = document.getElementById("totalIva");;
+
+
+                this.#cestaAñadidos.forEach(element => {
+
+                    let tr = document.createElement("tr");
+
+                    let tdId = document.createElement("td");
+                    tdId.setAttribute("scope", "col");
+                    let tdIdText = document.createTextNode(element.cod);
+                    tdId.appendChild(tdIdText);
+                    tr.appendChild(tdId);
+
+                    //Nombre
+                    let tdNombre = document.createElement("td");
+                    tdNombre.setAttribute("scope", "col");
+                    let tdNombreText = document.createTextNode(this.#productos[(element.cod - 1)].nombre);
+                    tdNombre.appendChild(tdNombreText);
+                    tr.appendChild(tdNombre);
+                    //Cantidad
+                    let tdCantidad = document.createElement("td");
+                    tdCantidad.setAttribute("scope", "col");
+                    let tdCantidadText = document.createTextNode(element.cantidad);
+                    tdCantidad.appendChild(tdCantidadText);
+                    tr.appendChild(tdCantidad);
+                    //Precio
+                    let tdPrecio = document.createElement("td");
+                    tdPrecio.setAttribute("scope", "col");
+                    let tdPrecioText = document.createTextNode(this.#productos[(element.cod - 1)].precio);
+                    tdPrecio.appendChild(tdPrecioText);
+                    tr.appendChild(tdPrecio);
+                    //SubTotal
+                    let tdSubTotal = document.createElement("td");
+                    tdSubTotal.setAttribute("scope", "col");
+                    tdSubTotal.innerHTML = (this.#productos[(element.cod - 1)].precio * element.cantidad);
+                    // tdSubTotal.appendChild(tdSubTotalText);
+                    tr.appendChild(tdSubTotal);
+                    bodyTable.appendChild(tr);
+                    //boton
+                    let boton = document.createElement("button");
+                    boton.setAttribute("data-idlim", element.cod);
+                    boton.innerHTML = "Eliminar";
+                    tr.appendChild(boton);
+
+                    this.borrarProducto(element.cod);
+                    arraySubtotal.push(Number(tdSubTotal.innerHTML));
+
+
+                });
+
+                arraySubtotal.forEach(element => {
+                    total += element
+                });
+
+                totalP.innerHTML = "Total: " + total + "€";
+                totalIVA.innerHTML = "Total + Iva: " + (total * 1.21) + "€";
+
+
+            }
+
+            borrarProducto(cod) {
+
+                let idlim = document.querySelector(`[data-idlim = "${cod}"]`);
+
+                idlim.addEventListener(
+                    "click",
+                    () => {
+                        let find = this.#cestaAñadidos.findIndex(element => element.cod == cod);
+                        this.#cestaAñadidos.splice(find, 1);
+                        var objJS = this.#cestaAñadidos;
+                        var cadenaJSON = JSON.stringify(objJS);
+                        localStorage.setItem("datos", cadenaJSON);
+                        this.mostrarCesta();
+                    }
+                );
+
+
+            }
+
+        }
+
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="titulo">
+                <h1><img src="https://cdn.icon-icons.com/icons2/1381/PNG/512/googlephotos_94016.png" alt=""
+                        id="fotos">DE TODO...</h1>
+            </div>
+            <p>Ejemplo cálculo de cesta o carrito de la compra....</p>
+        </header>
+        <div class="prodCesta">
+            <!-- Productos -->
+            <div id="contProductos" class="col-sm-7 row">
+            </div>
+            <!-- Cesta -->
+            <aside>
+                <h2><img src="https://cdn-icons-png.flaticon.com/512/1077/1077877.png" alt="" id="fotos"> Cesta</h2>
+                <div class="table-responsive">
+                    <table class="table table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Cod</th>
+                                <th scope="col">Nombre</th>
+                                <th scope="col">Cantidad</th>
+                                <th scope="col">Precio (€)</th>
+                                <th scope="col">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyTable">
+                        </tbody>
+                    </table>
+                    <p id="total">Total: 0.00€</p>
+                    <p id="totalIva">Total + IVA (21%): 0.00€</p>
+                </div>
+            </aside>
+        </div>
+
+    </div>
+</body>
+
+</html>
